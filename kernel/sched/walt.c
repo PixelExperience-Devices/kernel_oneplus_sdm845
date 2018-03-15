@@ -3208,7 +3208,12 @@ void walt_irq_work(struct irq_work *irq_work)
 	}
 
 	for_each_sched_cluster(cluster) {
-		for_each_cpu(cpu, &cluster->cpus) {
+		cpumask_t cluster_online_cpus;
+		unsigned int num_cpus, i = 1;
+		cpumask_and(&cluster_online_cpus, &cluster->cpus,
+			cpu_online_mask);
+		num_cpus = cpumask_weight(&cluster_online_cpus);
+		for_each_cpu(cpu, &cluster_online_cpus) {
 			int nflag = 0;
 
 			rq = cpu_rq(cpu);
@@ -3221,9 +3226,13 @@ void walt_irq_work(struct irq_work *irq_work)
 					nflag = SCHED_CPUFREQ_FORCE_UPDATE;
 				}
 			}
-
+		if (i == num_cpus)
 			cpufreq_update_util(rq, nflag);
-		}
+		else
+			cpufreq_update_util(rq, nflag |
+			    SCHED_CPUFREQ_CONTINUE);
+		i++;
+    		}
 	}
 
 	for_each_cpu(cpu, cpu_possible_mask)
