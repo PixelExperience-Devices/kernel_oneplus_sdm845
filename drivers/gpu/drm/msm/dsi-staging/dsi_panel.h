@@ -200,6 +200,7 @@ struct dsi_panel {
 	int acl_cmd_index;
 	int acl_mode_index;
 	int hbm_mode;
+	int hbm_los_mode;
     int aod_mode;
     int aod_status;
     int aod_curr_mode;
@@ -288,6 +289,8 @@ int dsi_panel_get_dfps_caps(struct dsi_panel *panel,
 			    struct dsi_dfps_capabilities *dfps_caps);
 
 int dsi_panel_apply_display_mode(struct dsi_panel *panel);
+
+int dsi_panel_apply_hbm_mode(struct dsi_panel *panel);
 
 int dsi_panel_pre_prepare(struct dsi_panel *panel);
 
