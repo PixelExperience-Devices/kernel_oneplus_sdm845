@@ -10083,7 +10083,7 @@ static int need_active_balance(struct lb_env *env)
 	if (env->flags & LBF_BIG_TASK_ACTIVE_BALANCE)
 		return 1;
 
-	if (env->idle == CPU_NEWLY_IDLE) {
+	if (env->idle != CPU_NOT_IDLE) {
 
 		/*
 		 * ASYM_PACKING needs to force migrate tasks from busy but
