@@ -35,7 +35,9 @@ struct msm_commit {
 	struct kthread_work commit_work;
 };
 
-static BLOCKING_NOTIFIER_HEAD(msm_drm_notifier_list);
+BLOCKING_NOTIFIER_HEAD(msm_drm_notifier_list);
+
+int connector_state_crtc_index;
 
 int connector_state_crtc_index;
 
@@ -258,7 +260,6 @@ msm_disable_outputs(struct drm_device *dev, struct drm_atomic_state *old_state)
 
 		DRM_DEBUG_ATOMIC("disabling [ENCODER:%d:%s]\n",
 				 encoder->base.id, encoder->name);
-
 		blank = MSM_DRM_BLANK_POWERDOWN;
 		notifier_data.data = &blank;
 		notifier_data.id = crtc_idx;
@@ -485,6 +486,7 @@ static void msm_atomic_helper_commit_modeset_enables(struct drm_device *dev,
 				connector->state->crtc->index;
 			connector_state_crtc_index = connector->state->crtc->index;
 			DRM_DEBUG_ATOMIC("Notify early unblank\n");
+			connector_state_crtc_index = connector->state->crtc->index;
 			msm_drm_notifier_call_chain(MSM_DRM_EARLY_EVENT_BLANK,
 					    &notifier_data);
 		}
@@ -582,7 +584,7 @@ static void complete_commit(struct msm_commit *c)
 
 	drm_atomic_state_free(state);
 
-	priv->commit_end_time =  ktime_get();
+	priv->commit_end_time =  ktime_get(); //commit end time
 
 	commit_destroy(c);
 }
