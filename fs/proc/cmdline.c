@@ -32,8 +32,8 @@ static int __init proc_cmdline_init(void)
 
 	strcpy(cmd, saved_command_line);
 
-	search = "skip_initramfs";
-	replace = "androidboot.force_normal_boot=1";
+	search = "skip_initramf";
+	replace = "androidboot.force_normal_boot=1 ";
 	search_len = strlen(search);
 	replace_len = strlen(replace);
 
