@@ -7,6 +7,7 @@
 #include "compress.h"
 #include <linux/overflow.h>
 #include <linux/prefetch.h>
+#include <linux/vmalloc.h>
 
 #include <trace/events/erofs.h>
 
@@ -807,7 +808,6 @@ static void z_erofs_decompressqueue_endio(struct bio *bio)
 {
 	tagptr1_t t = tagptr_init(tagptr1_t, bio->bi_private);
 	struct z_erofs_decompressqueue *q = tagptr_unfold_ptr(t);
-	blk_status_t err = bio->bi_status;
 	struct bio_vec *bvec;
 	unsigned int i;
 
@@ -817,11 +817,11 @@ static void z_erofs_decompressqueue_endio(struct bio *bio)
 		DBG_BUGON(PageUptodate(page));
 		DBG_BUGON(z_erofs_page_is_invalidated(page));
 
-		if (err)
+		if (bio->bi_error)
 			SetPageError(page);
 
 		if (erofs_page_is_managed(EROFS_SB(q->sb), page)) {
-			if (!err)
+			if (!bio->bi_error)
 				SetPageUptodate(page);
 			unlock_page(page);
 		}
@@ -858,13 +858,15 @@ static int z_erofs_decompress_pcluster(struct super_block *sb,
 		   mutex_trylock(&z_pagemap_global_lock)) {
 		pages = z_pagemap_global;
 	} else {
-		gfp_t gfp_flags = GFP_KERNEL;
+		pages = kmalloc_array(nr_pages, sizeof(struct page *),
+				       GFP_KERNEL);
 
-		if (nr_pages > Z_EROFS_VMAP_GLOBAL_PAGES)
-			gfp_flags |= __GFP_NOFAIL;
+		if (!pages) 
+			pages = vmalloc(nr_pages * sizeof(struct page *));
 
-		pages = kvmalloc_array(nr_pages, sizeof(struct page *),
-				       gfp_flags);
+		if (!pages && nr_pages > Z_EROFS_VMAP_GLOBAL_PAGES)
+			pages = kmalloc_array(nr_pages, sizeof(struct page *),
+				       GFP_KERNEL | __GFP_NOFAIL);
 
 		/* fallback to global pagemap for the lowmem scenario */
 		if (!pages) {
@@ -1184,7 +1186,7 @@ jobqueue_init(struct super_block *sb,
 	struct z_erofs_decompressqueue *q;
 
 	if (fg && !*fg) {
-		q = kvzalloc(sizeof(*q), GFP_KERNEL | __GFP_NOWARN);
+		q = kzalloc(sizeof(*q), GFP_KERNEL | __GFP_NOWARN);
 		if (!q) {
 			*fg = true;
 			goto fg_out;
@@ -1302,7 +1304,7 @@ submit_bio_retry:
 				bio = bio_alloc(GFP_NOIO, BIO_MAX_PAGES);
 
 				bio->bi_end_io = z_erofs_decompressqueue_endio;
-				bio_set_dev(bio, sb->s_bdev);
+				bio->bi_bdev = sb->s_bdev;
 				bio->bi_iter.bi_sector = (sector_t)cur <<
 					LOG_SECTORS_PER_BLOCK;
 				bio->bi_private = bi_private;
