@@ -4583,7 +4583,7 @@ error:
 	return rc;
 }
 
-int dsi_panel_apply_display_mode(struct dsi_panel *panel)
+int dsi_panel_apply_display_mode_locked(struct dsi_panel *panel)
 {
 	enum dsi_cmd_set_type type;
 	int rc;
@@ -4595,8 +4595,17 @@ int dsi_panel_apply_display_mode(struct dsi_panel *panel)
 		default: type = DSI_CMD_SET_MODE_DEFAULT; break;
 	}
 
-	mutex_lock(&panel->panel_lock);
 	rc = dsi_panel_tx_cmd_set(panel, type);
+
+	return rc;
+}
+
+int dsi_panel_apply_display_mode(struct dsi_panel *panel)
+{
+	int rc;
+
+	mutex_lock(&panel->panel_lock);
+	rc = dsi_panel_apply_display_mode_locked(panel);
 	mutex_unlock(&panel->panel_lock);
 
 	return rc;
