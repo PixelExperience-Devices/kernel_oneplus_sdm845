@@ -68,7 +68,7 @@ static int wcdcal_hwdep_ioctl_shared(struct snd_hwdep *hw,
 	void *data;
 
 	if (!test_bit(fw_user.cal_type, fw_data->cal_bit)) {
-		pr_err("%s: codec didn't set this %d!!\n",
+		pr_debug("%s: codec didn't set this %d!!\n",
 				__func__, fw_user.cal_type);
 		return -EFAULT;
 	}
