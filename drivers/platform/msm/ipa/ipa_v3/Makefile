@@ -3,7 +3,7 @@ obj-$(CONFIG_IPA3) += ipahal/
 ifdef CONFIG_X86
 ccflags-y += -DIPA_EMULATION_COMPILE=1
 else
-ccflags-y += -DIPA_EMULATION_COMPILE=0
+ccflags-y += -DIPA_EMULATION_COMPILE=0 -Wno-strict-prototypes
 endif
 
 obj-$(CONFIG_IPA3) += ipat.o
