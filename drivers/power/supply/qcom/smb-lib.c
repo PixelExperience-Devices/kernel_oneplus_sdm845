@@ -3811,7 +3811,7 @@ irqreturn_t smblib_handle_chg_state_change(int irq, void *data)
 	if (stat == TERMINATE_CHARGE) {
 		/* charge done, disable charge in software also */
 		chg->chg_done = true;
-		pr_info("TERMINATE_CHARGE: chg_done: CAP=%d (Q:%d), VBAT=%d (Q:%d), IBAT=%d (Q:%d), BAT_TEMP=%d\n",
+		pr_debug("TERMINATE_CHARGE: chg_done: CAP=%d (Q:%d), VBAT=%d (Q:%d), IBAT=%d (Q:%d), BAT_TEMP=%d\n",
 			get_prop_batt_capacity(chg),
 			get_prop_fg_capacity(chg),
 			get_prop_batt_voltage_now(chg) / 1000,
@@ -7233,7 +7233,7 @@ void checkout_term_current(struct smb_charger *chg)
 	if (chg_full) {
 		chg->chg_done = true;
 		op_charging_en(chg, false);
-		pr_info("chg_done:CAP=%d (Q:%d),VBAT=%d (Q:%d),IBAT=%d (Q:%d),BAT_TEMP=%d\n",
+		pr_debug("chg_done:CAP=%d (Q:%d),VBAT=%d (Q:%d),IBAT=%d (Q:%d),BAT_TEMP=%d\n",
 				get_prop_batt_capacity(chg),
 				get_prop_fg_capacity(chg),
 				get_prop_batt_voltage_now(chg) / 1000,
