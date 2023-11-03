@@ -1,3 +1,4 @@
+CONFIG_LOCALVERSION="-perf-sn-uotan"
 # CONFIG_FHANDLE is not set
 CONFIG_AUDIT=y
 # CONFIG_AUDITSYSCALL is not set
